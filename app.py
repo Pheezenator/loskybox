@@ -1,9 +1,9 @@
-from flask import Flask, request, send_file, abort
+from flask import Flask, request, send_file, abort, url_for
 import os, uuid
 
 app = Flask(__name__)
 
-# Cesta pro uploady
+# Upload složka
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -100,7 +100,7 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    file = request.files['file']
+    file = request.files.get('file')
     if not file:
         return "No file uploaded", 400
 
@@ -110,7 +110,8 @@ def upload_file():
     file.save(path)
 
     print(f"[UPLOAD] Saved: {path}")
-    return f"http://127.0.0.1:5000/file/{filename}", 200, {'Content-Type': 'text/plain'}
+    url = url_for('serve_file', filename=filename, _external=True)
+    return url, 200, {'Content-Type': 'text/plain'}
 
 @app.route('/file/<filename>')
 def serve_file(filename):
